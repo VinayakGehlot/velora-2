@@ -27,7 +27,7 @@ export const SpeakerVisualizer: React.FC<SpeakerVisualizerProps> = ({ phase }) =
           className={`absolute rounded-full border border-white/40 transition-transform duration-300 ${
             isLoud
               ? 'w-72 h-72 sm:w-96 sm:h-96 scale-125 opacity-90 animate-ping'
-              : 'w-60 h-60 sm:w-76 sm:h-76 scale-110 opacity-60 animate-pulse'
+              : 'w-60 h-60 opacity-0 pointer-events-none'
           }`}
           style={{ animationDuration: isLoud ? '0.45s' : '0.9s' }}
         />
@@ -35,7 +35,7 @@ export const SpeakerVisualizer: React.FC<SpeakerVisualizerProps> = ({ phase }) =
           className={`absolute rounded-full border border-white/30 transition-transform duration-500 ${
             isLoud
               ? 'w-84 h-84 sm:w-[440px] sm:h-[440px] scale-150 opacity-50'
-              : 'w-68 h-68 sm:w-88 sm:h-88 scale-105 opacity-40 animate-pulse'
+              : 'w-68 h-68 opacity-0 pointer-events-none'
           }`}
           style={{ animationDuration: isLoud ? '0.9s' : '1.4s' }}
         />
@@ -48,9 +48,7 @@ export const SpeakerVisualizer: React.FC<SpeakerVisualizerProps> = ({ phase }) =
             ? pulseTick % 2 === 0
               ? 'scale-110 shadow-[0_0_80px_rgba(255,255,255,0.95)]'
               : 'scale-95 shadow-[0_0_40px_rgba(255,255,255,0.6)]'
-            : pulseTick % 2 === 0
-            ? 'scale-105 shadow-[0_0_45px_rgba(255,255,255,0.7)]'
-            : 'scale-98 shadow-[0_0_25px_rgba(255,255,255,0.4)]'
+            : 'scale-100 shadow-[0_0_25px_rgba(255,255,255,0.25)]'
         } bg-gradient-to-b from-neutral-800 via-neutral-900 to-black border-4 border-neutral-200`}
       >
         {/* Outer Metallic Ring Screws / Detail */}
@@ -89,16 +87,14 @@ export const SpeakerVisualizer: React.FC<SpeakerVisualizerProps> = ({ phase }) =
       </div>
 
       {/* Dynamic Sound Wave Arcs Radiating on Left & Right */}
-      <div className="absolute -left-14 sm:-left-20 flex items-center gap-1.5">
+      <div className={`absolute -left-14 sm:-left-20 flex items-center gap-1.5 transition-opacity duration-300 ${isLoud ? 'opacity-100' : 'opacity-0'}`}>
         <div
           className={`w-1.5 bg-white rounded-full transition-all duration-150 ${
             isLoud
               ? pulseTick % 3 === 0
                 ? 'h-20 opacity-100'
                 : 'h-10 opacity-60'
-              : pulseTick % 2 === 0
-              ? 'h-14 opacity-80'
-              : 'h-6 opacity-40'
+              : 'h-4 opacity-0'
           }`}
         />
         <div
@@ -107,9 +103,7 @@ export const SpeakerVisualizer: React.FC<SpeakerVisualizerProps> = ({ phase }) =
               ? pulseTick % 2 === 0
                 ? 'h-28 opacity-100'
                 : 'h-12 opacity-70'
-              : pulseTick % 3 === 0
-              ? 'h-18 opacity-90'
-              : 'h-8 opacity-50'
+              : 'h-4 opacity-0'
           }`}
         />
         <div
@@ -118,23 +112,19 @@ export const SpeakerVisualizer: React.FC<SpeakerVisualizerProps> = ({ phase }) =
               ? pulseTick % 4 === 0
                 ? 'h-36 opacity-100'
                 : 'h-14 opacity-80'
-              : pulseTick % 2 === 0
-              ? 'h-24 opacity-85'
-              : 'h-10 opacity-50'
+              : 'h-4 opacity-0'
           }`}
         />
       </div>
 
-      <div className="absolute -right-14 sm:-right-20 flex items-center gap-1.5">
+      <div className={`absolute -right-14 sm:-right-20 flex items-center gap-1.5 transition-opacity duration-300 ${isLoud ? 'opacity-100' : 'opacity-0'}`}>
         <div
           className={`w-1.5 bg-white rounded-full transition-all duration-150 ${
             isLoud
               ? pulseTick % 4 === 0
                 ? 'h-36 opacity-100'
                 : 'h-14 opacity-80'
-              : pulseTick % 2 === 0
-              ? 'h-24 opacity-85'
-              : 'h-10 opacity-50'
+              : 'h-4 opacity-0'
           }`}
         />
         <div
@@ -143,9 +133,7 @@ export const SpeakerVisualizer: React.FC<SpeakerVisualizerProps> = ({ phase }) =
               ? pulseTick % 2 === 0
                 ? 'h-28 opacity-100'
                 : 'h-12 opacity-70'
-              : pulseTick % 3 === 0
-              ? 'h-18 opacity-90'
-              : 'h-8 opacity-50'
+              : 'h-4 opacity-0'
           }`}
         />
         <div
@@ -154,9 +142,7 @@ export const SpeakerVisualizer: React.FC<SpeakerVisualizerProps> = ({ phase }) =
               ? pulseTick % 3 === 0
                 ? 'h-20 opacity-100'
                 : 'h-10 opacity-60'
-              : pulseTick % 2 === 0
-              ? 'h-14 opacity-80'
-              : 'h-6 opacity-40'
+              : 'h-4 opacity-0'
           }`}
         />
       </div>
@@ -167,7 +153,7 @@ export const SpeakerVisualizer: React.FC<SpeakerVisualizerProps> = ({ phase }) =
           const mod = (pulseTick + idx * 3) % 4;
           const activeHeight = isLoud
             ? Math.min(36, height * 1.0)
-            : Math.max(8, (height * (mod + 1)) / 4);
+            : 4;
 
           return (
             <div
@@ -175,7 +161,7 @@ export const SpeakerVisualizer: React.FC<SpeakerVisualizerProps> = ({ phase }) =
               className="w-1.5 sm:w-2 bg-white rounded-full transition-all duration-100"
               style={{
                 height: `${activeHeight}px`,
-                opacity: 0.95,
+                opacity: isLoud ? 0.95 : 0.25,
               }}
             />
           );

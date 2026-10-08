@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { siteConfig } from '../config/siteConfig';
 import { prankAudioEngine } from '../utils/audioEngine';
 import { useFullscreen } from './useFullscreen';
+import { initPostInteractionAds } from '../utils/adManager';
 
 export type PrankPhase = 'silent' | 'loud';
 
@@ -11,22 +12,27 @@ export function usePrankMode() {
   const [isPrankRevealed, setIsPrankRevealed] = useState<boolean>(false);
   const [phase, setPhase] = useState<PrankPhase>('silent');
   const timerRef = useRef<number | null>(null);
-  const intervalRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const phaseTimerRef = useRef<number | null>(null);
   const wakeLockRef = useRef<unknown>(null);
   const { requestFullscreen, exitFullscreen } = useFullscreen();
 
   /**
-   * User taps 'CLOSE' to stop audio immediately and exit the prank
+   * Only called when the user EXPLICITLY clicks the 'CLOSE' button!
+   * The audio will NEVER stop automatically.
+   *
+   * 1. Stops prank audio immediately
+   * 2. Stops lighting and visual effects
+   * 3. Exits fullscreen
+   * 4. Reveals the 'GOT YOU 😈' completion modal with Native Ad and CTAs
    */
   const stopPrank = useCallback(() => {
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-    if (intervalRef.current !== null) {
-      window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    if (phaseTimerRef.current !== null) {
+      window.clearTimeout(phaseTimerRef.current);
+      phaseTimerRef.current = null;
     }
 
     // Release wake lock if held
@@ -35,25 +41,30 @@ export function usePrankMode() {
       wakeLockRef.current = null;
     }
 
-    // Stop audio immediately
+    // 1. Explicit user tap on CLOSE: Stop prank audio
     prankAudioEngine.stop();
     exitFullscreen();
 
+    // 2. Stop intense lighting & visual prank effects
     setIsPrankActive(false);
     setCanDismiss(false);
+
+    // 3. Reveal completion screen with Native Ad and CTAs
     setIsPrankRevealed(true);
   }, [exitFullscreen]);
 
   const triggerPrank = useCallback(() => {
     if (isPrankActive) return;
 
+    // 1. Initialize advertisement integrations without blocking the prank
+    initPostInteractionAds();
+
     setIsPrankRevealed(false);
     setIsPrankActive(true);
     setCanDismiss(false);
     setPhase('silent');
-    startTimeRef.current = Date.now();
 
-    // 1. Request Screen Wake Lock so display does not sleep quickly
+    // 2. Request Screen Wake Lock so display does not sleep
     if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
       try {
         (navigator as unknown as { wakeLock: { request: (type: string) => Promise<unknown> } })
@@ -67,18 +78,18 @@ export function usePrankMode() {
       }
     }
 
-    // 2. Fullscreen attempt on user gesture
+    // 3. Fullscreen attempt on user gesture
     requestFullscreen();
 
-    // 3. Audio trigger:
-    // First 0 to 3.5s: 100% silent, speaker visualizer animates actively.
-    // 3.5s onwards: Looping loud audio back-to-back in foreground & background.
+    // 4. Start prank audio immediately from user gesture.
+    // The master track starts with 3.6s of absolute silence, satisfying browser autoplay permission.
+    // At 3.6s it automatically bursts into loud prank audio.
     prankAudioEngine.start(siteConfig.prankAudioPath);
 
-    // 4. Trap history states so Back button on mobile doesn't exit or stop audio
+    // 5. Trap history states so Back button on mobile doesn't navigate away
     if (typeof window !== 'undefined') {
       try {
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 15; i++) {
           window.history.pushState({ veloraVault: true, step: i }, '', window.location.href);
         }
       } catch {
@@ -86,26 +97,28 @@ export function usePrankMode() {
       }
     }
 
-    const targetDismissTime = siteConfig.prankDurationMs || 18000;
+    const suspenseDelay = siteConfig.prankSuspenseDelayMs || 3600;
+    const totalDuration = siteConfig.prankDurationMs || 21600;
 
-    // 5. Timeline interval check:
-    intervalRef.current = window.setInterval(() => {
-      const elapsed = Date.now() - startTimeRef.current;
-      if (elapsed < 3500) {
-        setPhase('silent');
-      } else {
-        setPhase('loud');
-      }
+    // Transition from suspense silent phase to loud blasting phase after ~3.6s
+    if (phaseTimerRef.current !== null) {
+      window.clearTimeout(phaseTimerRef.current);
+    }
+    phaseTimerRef.current = window.setTimeout(() => {
+      setPhase('loud');
+      prankAudioEngine.ensurePlaying();
+    }, suspenseDelay);
 
-      if (elapsed >= targetDismissTime) {
-        setCanDismiss(true);
-      }
-    }, 50);
-
-    // 6. Timer unlocks the Close button at the configured delay (e.g. 18th second)
+    // After 18s of loud audio playback (total ~21.6s from start): REVEAL the CLOSE button!
+    // CRITICAL: DO NOT automatically stop the sound or prank!
+    // The sound continues looping relentlessly until the user explicitly clicks CLOSE.
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+    }
     timerRef.current = window.setTimeout(() => {
       setCanDismiss(true);
-    }, targetDismissTime);
+      prankAudioEngine.ensurePlaying();
+    }, totalDuration);
   }, [isPrankActive, requestFullscreen]);
 
   const resetPrank = useCallback(() => {
@@ -117,15 +130,15 @@ export function usePrankMode() {
   useEffect(() => {
     if (!isPrankActive) return;
 
-    const handlePopState = () => {
+    const handlePopState = (e: PopStateEvent) => {
       if (isPrankActive) {
-        // Push state back so browser does not navigate away
+        // Prevent back navigation from leaving the page: push state back immediately
         try {
           window.history.pushState({ veloraVault: true }, '', window.location.href);
         } catch {
           // Ignore
         }
-        // Force audio to keep blasting even if back was pressed
+        // Force audio to keep playing
         prankAudioEngine.ensurePlaying();
       }
     };
@@ -143,7 +156,7 @@ export function usePrankMode() {
     };
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isPrankActive && !canDismiss) {
+      if (isPrankActive) {
         prankAudioEngine.ensurePlaying();
         e.preventDefault();
         e.returnValue = '';
@@ -162,20 +175,7 @@ export function usePrankMode() {
       window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isPrankActive, canDismiss]);
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current !== null) {
-        window.clearTimeout(timerRef.current);
-      }
-      if (intervalRef.current !== null) {
-        window.clearInterval(intervalRef.current);
-      }
-      prankAudioEngine.stop();
-    };
-  }, []);
+  }, [isPrankActive]);
 
   return {
     isPrankActive,

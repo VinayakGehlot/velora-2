@@ -26,6 +26,7 @@ export interface SiteConfig {
   primaryCta: string;
   secondaryCta: string;
   subCtaText: string;
+  prankSuspenseDelayMs?: number;
   prankDurationMs: number;
   prankAudioPath: string;
   shareTitle: string;
@@ -42,7 +43,8 @@ export const siteConfig: SiteConfig = {
   primaryCta: "EXPLORE GALLERY",
   secondaryCta: "MY ARTWORK GALLERY",
   subCtaText: "High-resolution masterworks catalog.",
-  prankDurationMs: 18000,
+  prankSuspenseDelayMs: 3600, // 3.6s suspenseful silence
+  prankDurationMs: 21600, // 3.6s suspense + 18s loud playback before CLOSE button appears
   prankAudioPath: "/audio/prank-master.mp3",
   shareTitle: "VELORA — Contemporary Art & Sovereign Gallery",
   shareText: "Explore the exclusive VELORA gallery and sovereign collection 💎",

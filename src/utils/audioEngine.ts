@@ -115,15 +115,17 @@ class PrankAudioEngine {
       audio.setAttribute('webkit-playsinline', 'true');
       audio.preload = 'auto';
 
-      // Start unmuted at maximum volume immediately
+      // Start unmuted at maximum volume immediately from user click gesture.
+      // The first ~3.6s of prank-master.mp3 are completely silent, satisfying browser autoplay permission.
+      // Then the loud prank sound blasts suddenly at 3.63s and continues uninterrupted.
       audio.muted = false;
       audio.volume = 1.0;
       audio.currentTime = 0;
 
-      // Ensure seamless loop if it ever reaches end of 6+ minutes: loop back to 3.5s (skip initial silence)
+      // Ensure seamless loop: replay back to start of loud audio (3.63s), avoiding repeat silence
       audio.onended = () => {
         if (this.isPlaying) {
-          audio.currentTime = 3.5;
+          audio.currentTime = 3.63;
           audio.play().catch(() => {});
         }
       };
@@ -143,8 +145,8 @@ class PrankAudioEngine {
       audio.ontimeupdate = () => {
         if (this.isPlaying) {
           const duration = audio.duration;
-          if (duration && duration > 10 && audio.currentTime >= duration - 0.5) {
-            audio.currentTime = 3.5;
+          if (duration && duration > 5 && audio.currentTime >= duration - 0.2) {
+            audio.currentTime = 3.63;
             audio.play().catch(() => {});
           }
         }
