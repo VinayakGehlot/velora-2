@@ -1,0 +1,6 @@
+{
+  "name": "VELORA | Contemporary Digital Gallery",
+  "description": "A curated contemporary digital gallery exploring light, form, and immersive visual perception.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

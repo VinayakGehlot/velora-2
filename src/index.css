@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  :root {
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #050505;
+    color: #e6e6e6;
+    overflow-x: hidden;
+    touch-action: manipulation;
+  }
+}
+
+/* Custom Safe Area utilities */
+.pt-safe {
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+}
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+/* Red & Blue Alternating Clean Strobe Flash ("झपक-झपक") */
+@keyframes red-blue-flash {
+  0%, 49.9% {
+    background-color: #dc2626; /* Pure vibrant red */
+  }
+  50%, 100% {
+    background-color: #1d4ed8; /* Pure vibrant blue */
+  }
+}
+
+.animate-red-blue-flash {
+  animation: red-blue-flash 0.18s infinite steps(1);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-red-blue-flash {
+    animation-duration: 0.8s !important;
+  }
+}
