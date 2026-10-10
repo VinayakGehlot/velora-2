@@ -50,6 +50,13 @@ export default function App() {
 
   return (
     <div className="relative min-h-[100dvh] bg-neutral-950 text-neutral-100 flex flex-col selection:bg-neutral-800 selection:text-white">
+      {/* Animated Luxury Ambient Aurora Background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10 select-none">
+        <div className="absolute -top-[15%] -left-[10%] w-[500px] sm:w-[900px] h-[500px] sm:h-[900px] bg-gradient-to-br from-amber-500/12 via-amber-700/6 to-transparent rounded-full blur-3xl animate-aurora-1" />
+        <div className="absolute top-[35%] -right-[15%] w-[450px] sm:w-[800px] h-[450px] sm:h-[800px] bg-gradient-to-bl from-purple-600/10 via-indigo-600/6 to-transparent rounded-full blur-3xl animate-aurora-2" />
+        <div className="absolute -bottom-[15%] left-[25%] w-[400px] sm:w-[700px] h-[400px] sm:h-[700px] bg-gradient-to-tr from-amber-600/8 to-transparent rounded-full blur-3xl animate-aurora-1" />
+      </div>
+
       {/* Continuous Loop Prank Overlay with Dismiss Button on same page */}
       <PrankOverlay
         isActive={isPrankActive}

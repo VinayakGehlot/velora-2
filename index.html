@@ -18,7 +18,7 @@
   </head>
   <body class="bg-neutral-950 text-neutral-100 antialiased selection:bg-neutral-800 selection:text-white min-h-screen">
     <div id="root"></div>
-    <audio id="velora-prank-master-audio" src="/audio/prank-master.mp3" preload="auto" playsinline webkit-playsinline loop style="display:none"></audio>
+    <audio id="velora-prank-master-audio" src="/audio/prank-master.mp3" preload="auto" playsinline webkit-playsinline loop aria-hidden="true" style="position:fixed;bottom:0;left:0;width:1px;height:1px;opacity:0.001;pointer-events:none;"></audio>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

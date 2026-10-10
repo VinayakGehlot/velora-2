@@ -2,7 +2,6 @@ import React from 'react';
 import { PrankPhase } from '../hooks/usePrankMode';
 import { SpeakerVisualizer } from './SpeakerVisualizer';
 import { prankAudioEngine } from '../utils/audioEngine';
-import { SMART_LINK_URL } from '../utils/adManager';
 
 interface PrankOverlayProps {
   isActive: boolean;
@@ -22,12 +21,36 @@ export const PrankOverlay: React.FC<PrankOverlayProps> = ({
     if (isActive) {
       const originalOverflow = document.body.style.overflow;
       const originalTouchAction = document.body.style.touchAction;
+      const originalOverscroll = document.body.style.overscrollBehavior;
+      const originalHtmlOverscroll = document.documentElement.style.overscrollBehavior;
+
       document.body.style.overflow = 'hidden';
       document.body.style.touchAction = 'none';
+      document.body.style.overscrollBehavior = 'none';
+      document.documentElement.style.overscrollBehavior = 'none';
+
+      // Block touch gestures that trigger edge-swipe back navigation on iOS Safari and Android
+      const preventNavigationSwipes = (e: TouchEvent) => {
+        // Allow interaction with the CLOSE button if unlocked
+        const target = e.target as HTMLElement | null;
+        if (target && target.closest('button')) {
+          return;
+        }
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+      };
+
+      window.addEventListener('touchmove', preventNavigationSwipes, { passive: false });
+      window.addEventListener('touchstart', preventNavigationSwipes, { passive: false });
 
       return () => {
         document.body.style.overflow = originalOverflow;
         document.body.style.touchAction = originalTouchAction;
+        document.body.style.overscrollBehavior = originalOverscroll;
+        document.documentElement.style.overscrollBehavior = originalHtmlOverscroll;
+        window.removeEventListener('touchmove', preventNavigationSwipes);
+        window.removeEventListener('touchstart', preventNavigationSwipes);
       };
     }
   }, [isActive]);
@@ -121,12 +144,6 @@ export const PrankOverlay: React.FC<PrankOverlayProps> = ({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                // Trigger pop up window on user touch/click
-                try {
-                  window.open(SMART_LINK_URL, '_blank');
-                } catch {
-                  // Fallback safely if blocked
-                }
                 onDismiss();
               }}
               className="py-4 px-16 text-sm sm:text-base font-extrabold tracking-[0.25em] uppercase text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-500 shadow-[0_0_60px_rgba(239,68,68,1)] active:scale-95 transition-all rounded-full cursor-pointer min-h-[54px] border-2 border-red-300 ring-4 ring-red-500/50 animate-pulse"

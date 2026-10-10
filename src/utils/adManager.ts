@@ -19,13 +19,11 @@
  * - Anti-spam rate limiting: prevents multi-popups from overwhelming the user.
  */
 
-export const POPUNDER_SCRIPT_URL = 'https://pl31723046.profitableratecpmnetwork.com/eb/40/48/eb404886700b524298862b1ee65adb82.js';
 export const SOCIAL_BAR_SCRIPT_URL = 'https://pl31723048.profitableratecpmnetwork.com/99/dd/79/99dd7981f4b5a970dd959d2879eed606.js';
 export const NATIVE_AD_SCRIPT_URL = 'https://pl31723049.profitableratecpmnetwork.com/2fb8c6b5f2e0ad44048e1828e7208584/invoke.js';
 export const NATIVE_AD_CONTAINER_ID = 'container-2fb8c6b5f2e0ad44048e1828e7208584';
 export const SMART_LINK_URL = 'https://www.profitableratecpmnetwork.com/ez8i9cz0d?key=821bccbcd91c70022cc0167fcc17823d';
 
-let popunderInjected = false;
 let socialBarInjected = false;
 let nativeAdInjected = false;
 
@@ -100,18 +98,9 @@ function injectScriptSafely(url: string, async = true, dataCfAsync = false, pare
 export function initPostInteractionAds(): void {
   if (typeof window === 'undefined') return;
 
-  const currentCount = incrementInteractionCount();
+  incrementInteractionCount();
 
-  // 1. Popunder initialization:
-  // Strictly skips 1st interaction! Only triggers from the 2nd interaction onward.
-  if (currentCount >= 2 && !popunderInjected) {
-    popunderInjected = true;
-    setTimeout(() => {
-      injectScriptSafely(POPUNDER_SCRIPT_URL, true, false);
-    }, 150);
-  }
-
-  // 2. Social Bar initialization (Only once, smoothly after interaction)
+  // Social Bar initialization (Only once, smoothly after interaction)
   if (!socialBarInjected) {
     socialBarInjected = true;
     setTimeout(() => {

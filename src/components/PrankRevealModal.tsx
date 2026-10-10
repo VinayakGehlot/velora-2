@@ -73,12 +73,7 @@ export const PrankRevealModal: React.FC<PrankRevealModalProps> = ({
             Your device, system, and data remain 100% safe. Enjoy exploring our sovereign contemporary masterworks!
           </p>
 
-          {/* Professional Native Ad Container */}
-          <div className="w-full my-3 flex flex-col items-center justify-center min-h-[50px] overflow-hidden rounded-xl bg-neutral-900/40 border border-neutral-800/60 p-2">
-            <div id={NATIVE_AD_CONTAINER_ID} className="w-full text-center"></div>
-          </div>
-
-          {/* WhatsApp & Instagram Quick Share */}
+          {/* WhatsApp & Instagram Quick Share (Placed on TOP as requested) */}
           <div className="w-full grid grid-cols-2 gap-2.5 mb-3">
             <button
               onClick={shareToWhatsApp}
@@ -98,7 +93,7 @@ export const PrankRevealModal: React.FC<PrankRevealModalProps> = ({
           </div>
 
           {/* Professional Action Buttons */}
-          <div className="w-full flex flex-col gap-2">
+          <div className="w-full flex flex-col gap-2 mb-3">
             {/* Return to Gallery */}
             <button
               onClick={onBackToGallery}
@@ -135,6 +130,11 @@ export const PrankRevealModal: React.FC<PrankRevealModalProps> = ({
               <RotateCcw className="w-3 h-3" />
               <span>View Exhibition Again</span>
             </button>
+          </div>
+
+          {/* Professional Native Ad Container (Placed at bottom below share & return buttons) */}
+          <div className="w-full my-2 flex flex-col items-center justify-center min-h-[50px] overflow-hidden rounded-xl bg-neutral-900/40 border border-neutral-800/60 p-2">
+            <div id={NATIVE_AD_CONTAINER_ID} className="w-full text-center"></div>
           </div>
 
           <div className="mt-4 pt-3 border-t border-neutral-900 w-full text-center">

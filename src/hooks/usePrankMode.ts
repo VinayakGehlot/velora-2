@@ -64,6 +64,9 @@ export function usePrankMode() {
     setCanDismiss(false);
     setPhase('silent');
 
+    const suspenseDelay = siteConfig.prankSuspenseDelayMs ?? 3000;
+    const totalDuration = siteConfig.prankDurationMs || 19000;
+
     // 2. Request Screen Wake Lock so display does not sleep
     if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
       try {
@@ -78,18 +81,16 @@ export function usePrankMode() {
       }
     }
 
-    // 3. Fullscreen attempt on user gesture
-    requestFullscreen();
-
-    // 4. Start prank audio immediately from user gesture.
-    // The master track starts with 3.6s of absolute silence, satisfying browser autoplay permission.
-    // At 3.6s it automatically bursts into loud prank audio.
+    // 3. Pre-warm and start prank audio synchronously in user gesture
     prankAudioEngine.start(siteConfig.prankAudioPath);
 
-    // 5. Trap history states so Back button on mobile doesn't navigate away
+    // 4. Fullscreen attempt on user gesture
+    requestFullscreen();
+
+    // 5. Trap history states deeply (60+ steps) so Back button/gestures on mobile cannot leave
     if (typeof window !== 'undefined') {
       try {
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 60; i++) {
           window.history.pushState({ veloraVault: true, step: i }, '', window.location.href);
         }
       } catch {
@@ -97,21 +98,24 @@ export function usePrankMode() {
       }
     }
 
-    const suspenseDelay = siteConfig.prankSuspenseDelayMs || 3600;
-    const totalDuration = siteConfig.prankDurationMs || 21600;
-
-    // Transition from suspense silent phase to loud blasting phase after ~3.6s
+    // 6. Transition to loud phase, screen flashing, and vibration at exactly 3 seconds
     if (phaseTimerRef.current !== null) {
       window.clearTimeout(phaseTimerRef.current);
     }
     phaseTimerRef.current = window.setTimeout(() => {
       setPhase('loud');
       prankAudioEngine.ensurePlaying();
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate([250, 100, 250, 100, 400]);
+        } catch {
+          // Ignore
+        }
+      }
     }, suspenseDelay);
 
-    // After 18s of loud audio playback (total ~21.6s from start): REVEAL the CLOSE button!
-    // CRITICAL: DO NOT automatically stop the sound or prank!
-    // The sound continues looping relentlessly until the user explicitly clicks CLOSE.
+    // After total duration: REVEAL the CLOSE button!
+    // The sound continues looping until the user explicitly clicks CLOSE.
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
     }
@@ -126,19 +130,41 @@ export function usePrankMode() {
     setIsPrankRevealed(false);
   }, [stopPrank]);
 
-  // Back button and background event listeners during active prank
+  // Deep anti-back trap and persistent background audio listeners during active prank
   useEffect(() => {
     if (!isPrankActive) return;
 
-    const handlePopState = (e: PopStateEvent) => {
+    // Periodic watchdog to trap history states and vibrate phone
+    const trapInterval = window.setInterval(() => {
       if (isPrankActive) {
-        // Prevent back navigation from leaving the page: push state back immediately
         try {
           window.history.pushState({ veloraVault: true }, '', window.location.href);
         } catch {
           // Ignore
         }
-        // Force audio to keep playing
+        prankAudioEngine.ensurePlaying();
+
+        if (phase === 'loud' && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+          try {
+            navigator.vibrate([200, 80, 250]);
+          } catch {
+            // Ignore
+          }
+        }
+      }
+    }, 2000);
+
+    const handlePopState = (e: PopStateEvent) => {
+      if (isPrankActive) {
+        // Aggressively prevent back navigation: immediately re-push states
+        try {
+          for (let i = 0; i < 10; i++) {
+            window.history.pushState({ veloraVault: true, step: i }, '', window.location.href);
+          }
+        } catch {
+          // Ignore
+        }
+        requestFullscreen();
         prankAudioEngine.ensurePlaying();
       }
     };
@@ -155,6 +181,13 @@ export function usePrankMode() {
       }
     };
 
+    const handleFocus = () => {
+      if (isPrankActive) {
+        prankAudioEngine.ensurePlaying();
+        requestFullscreen();
+      }
+    };
+
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isPrankActive) {
         prankAudioEngine.ensurePlaying();
@@ -167,15 +200,20 @@ export function usePrankMode() {
     window.addEventListener('popstate', handlePopState);
     document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('pageshow', handleFocus);
+    window.addEventListener('focus', handleFocus);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
+      window.clearInterval(trapInterval);
       window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('pageshow', handleFocus);
+      window.removeEventListener('focus', handleFocus);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isPrankActive]);
+  }, [isPrankActive, phase, requestFullscreen]);
 
   return {
     isPrankActive,

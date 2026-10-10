@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { Maximize2, ArrowUpRight, Gem } from 'lucide-react';
-import { siteConfig, GalleryItem } from '../config/siteConfig';
+import { siteConfig } from '../config/siteConfig';
 import { ArtworkCanvas } from './ArtworkCanvas';
-import { ArtworkModal } from './ArtworkModal';
 
 interface GalleryProps {
   onTriggerExperience: () => void;
 }
 
 export const Gallery: React.FC<GalleryProps> = ({ onTriggerExperience }) => {
-  const [selectedArtwork, setSelectedArtwork] = useState<GalleryItem | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
@@ -81,7 +79,7 @@ export const Gallery: React.FC<GalleryProps> = ({ onTriggerExperience }) => {
             >
               {/* Image Frame */}
               <div
-                onClick={() => setSelectedArtwork(item)}
+                onClick={onTriggerExperience}
                 className={`relative w-full ${aspectClass} overflow-hidden cursor-pointer bg-neutral-900`}
                 tabIndex={0}
                 role="button"
@@ -89,7 +87,7 @@ export const Gallery: React.FC<GalleryProps> = ({ onTriggerExperience }) => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    setSelectedArtwork(item);
+                    onTriggerExperience();
                   }
                 }}
               >
@@ -142,7 +140,7 @@ export const Gallery: React.FC<GalleryProps> = ({ onTriggerExperience }) => {
                     {item.vaultLocation}
                   </span>
                   <button
-                    onClick={() => setSelectedArtwork(item)}
+                    onClick={onTriggerExperience}
                     className="inline-flex items-center gap-1 text-xs tracking-wider uppercase text-neutral-300 hover:text-white font-medium transition-colors cursor-pointer"
                   >
                     <span>Inspect</span>
@@ -154,13 +152,6 @@ export const Gallery: React.FC<GalleryProps> = ({ onTriggerExperience }) => {
           );
         })}
       </div>
-
-      {/* Inspect Modal */}
-      <ArtworkModal
-        item={selectedArtwork}
-        onClose={() => setSelectedArtwork(null)}
-        onTriggerExperience={onTriggerExperience}
-      />
     </section>
   );
 };
