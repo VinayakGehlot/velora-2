@@ -33,12 +33,12 @@ export const Hero: React.FC<HeroProps> = ({ onTriggerExperience, onOpenShareModa
         </div>
 
         {/* Monumental Headline */}
-        <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight font-light text-white leading-[1.08] mb-8 max-w-4xl [text-wrap:balance]">
-          CONTEMPORARY ART <span className="italic font-normal text-amber-200">GALLERY</span>.
+        <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight font-light text-white leading-[1.08] mb-6 max-w-4xl [text-wrap:balance]">
+          CONTEMPORARY ART <span className="italic font-normal bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-200 bg-clip-text text-transparent">GALLERY</span>.
         </h1>
 
         {/* Curatorial Subtext */}
-        <p className="text-base sm:text-lg md:text-xl text-neutral-400 max-w-2xl font-light leading-relaxed mb-10 [text-wrap:balance]">
+        <p className="text-base sm:text-lg md:text-xl text-neutral-400 max-w-2xl font-light leading-relaxed mb-8 [text-wrap:balance]">
           {siteConfig.heroDescription}
         </p>
 
@@ -47,10 +47,10 @@ export const Hero: React.FC<HeroProps> = ({ onTriggerExperience, onOpenShareModa
           {/* Main EXPLORE GALLERY Button */}
           <button
             onClick={onTriggerExperience}
-            className="group relative inline-flex items-center justify-center gap-3 px-8 sm:px-12 py-4 sm:py-5 text-sm sm:text-base font-bold tracking-[0.2em] uppercase text-black bg-white hover:bg-neutral-100 transition-all duration-300 shadow-[0_0_35px_rgba(255,255,255,0.25)] hover:shadow-[0_0_55px_rgba(255,255,255,0.45)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] cursor-pointer min-h-[56px] min-w-[260px] rounded-xl"
+            className="group relative inline-flex items-center justify-center gap-3 px-8 sm:px-12 py-4 sm:py-5 text-sm sm:text-base font-bold tracking-[0.2em] uppercase text-black bg-white hover:bg-neutral-100 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.35)] hover:shadow-[0_0_65px_rgba(245,158,11,0.45)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] cursor-pointer min-h-[56px] min-w-[260px] rounded-xl border border-white/60"
             aria-label="Explore Gallery Exhibition"
           >
-            <Sparkles className="w-4 h-4 text-black" />
+            <Sparkles className="w-4 h-4 text-amber-500" />
             <span>{siteConfig.primaryCta}</span>
             <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
           </button>
@@ -58,7 +58,7 @@ export const Hero: React.FC<HeroProps> = ({ onTriggerExperience, onOpenShareModa
           {/* Secondary Button: MY ARTWORK GALLERY */}
           <a
             href="#gallery"
-            className="inline-flex items-center justify-center px-8 py-4 sm:py-5 text-sm font-semibold tracking-[0.18em] uppercase text-neutral-300 hover:text-white bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-800 transition-all duration-300 rounded-xl min-h-[56px] min-w-[220px]"
+            className="inline-flex items-center justify-center px-8 py-4 sm:py-5 text-sm font-semibold tracking-[0.18em] uppercase text-neutral-300 hover:text-white bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-800/80 transition-all duration-300 rounded-xl min-h-[56px] min-w-[220px]"
           >
             {siteConfig.secondaryCta}
           </a>
