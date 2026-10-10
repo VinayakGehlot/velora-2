@@ -22,33 +22,12 @@ export const PrankOverlay: React.FC<PrankOverlayProps> = ({
     if (isActive) {
       const originalOverflow = document.body.style.overflow;
       const originalTouchAction = document.body.style.touchAction;
-      const originalOverscroll = document.body.style.overscrollBehavior;
-      const originalHtmlOverscroll = document.documentElement.style.overscrollBehavior;
-
       document.body.style.overflow = 'hidden';
       document.body.style.touchAction = 'none';
-      document.body.style.overscrollBehavior = 'none';
-      document.documentElement.style.overscrollBehavior = 'none';
-
-      // Block touch gestures that trigger edge-swipe back navigation without blocking button touches
-      const preventNavigationSwipes = (e: TouchEvent) => {
-        const target = e.target as HTMLElement | null;
-        if (target && target.closest('button')) {
-          return;
-        }
-        if (e.cancelable) {
-          e.preventDefault();
-        }
-      };
-
-      window.addEventListener('touchmove', preventNavigationSwipes, { passive: false });
 
       return () => {
         document.body.style.overflow = originalOverflow;
         document.body.style.touchAction = originalTouchAction;
-        document.body.style.overscrollBehavior = originalOverscroll;
-        document.documentElement.style.overscrollBehavior = originalHtmlOverscroll;
-        window.removeEventListener('touchmove', preventNavigationSwipes);
       };
     }
   }, [isActive]);
@@ -59,29 +38,14 @@ export const PrankOverlay: React.FC<PrankOverlayProps> = ({
    * Screen tap handler:
    * When user taps or clicks anywhere on screen while prank is active,
    * we ensure audio continues playing uninhibited.
-   * If user taps the CANCEL button, we do not interfere.
+   * We prevent bubbling that might trigger navigation or browser gestures.
    */
   const handleOverlayInteraction = (e: React.SyntheticEvent) => {
-    const target = e.target as HTMLElement | null;
-    if (target && target.closest('button')) {
-      return;
-    }
+    // Keep sound playing on any screen touch
     prankAudioEngine.ensurePlaying();
-    e.stopPropagation();
-  };
 
-  /**
-   * Dedicated Cancel handler: Guaranteed to dismiss the prank,
-   * stop the audio immediately, and trigger the pop up window.
-   */
-  const handleCancelClick = (e: React.SyntheticEvent) => {
+    // Prevent background clicks or gestures from navigating back
     e.stopPropagation();
-    try {
-      window.open(SMART_LINK_URL, '_blank');
-    } catch {
-      // Fallback safely if blocked
-    }
-    onDismiss();
   };
 
   return (
@@ -148,20 +112,26 @@ export const PrankOverlay: React.FC<PrankOverlayProps> = ({
           </div>
         )}
 
-        {/* Cancel button ONLY appears once unlocked (at 18 seconds of loud sound) */}
-        {/* Sound continues looping even when CANCEL button is visible, until user explicitly touches CANCEL */}
-        {/* Touching the red CANCEL button triggers the pop-up window and completes the prank */}
+        {/* Close button ONLY appears once unlocked (at 18 seconds of loud sound) */}
+        {/* Sound continues looping even when CLOSE button is visible, until user explicitly touches CLOSE */}
+        {/* Touching the red CLOSE button triggers the pop-up window and completes the prank */}
         {canDismiss && (
-          <div className="mt-10 flex flex-col items-center gap-2.5 animate-in fade-in zoom-in-95 duration-500 pointer-events-auto z-50">
+          <div className="mt-10 flex flex-col items-center gap-2.5 animate-in fade-in zoom-in-95 duration-500 pointer-events-auto">
             <button
               type="button"
-              onClick={handleCancelClick}
-              onTouchEnd={handleCancelClick}
-              onPointerUp={handleCancelClick}
-              style={{ touchAction: 'manipulation' }}
-              className="py-4 px-16 text-sm sm:text-base font-extrabold tracking-[0.25em] uppercase text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-500 shadow-[0_0_60px_rgba(239,68,68,1)] active:scale-95 transition-all rounded-full cursor-pointer min-h-[54px] border-2 border-red-300 ring-4 ring-red-500/50 animate-pulse pointer-events-auto"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Trigger pop up window on user touch/click
+                try {
+                  window.open(SMART_LINK_URL, '_blank');
+                } catch {
+                  // Fallback safely if blocked
+                }
+                onDismiss();
+              }}
+              className="py-4 px-16 text-sm sm:text-base font-extrabold tracking-[0.25em] uppercase text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-500 shadow-[0_0_60px_rgba(239,68,68,1)] active:scale-95 transition-all rounded-full cursor-pointer min-h-[54px] border-2 border-red-300 ring-4 ring-red-500/50 animate-pulse"
             >
-              CANCEL
+              CLOSE
             </button>
           </div>
         )}
